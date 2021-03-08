@@ -1,7 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
+// https://firebase.flutter.dev/docs/messaging/server-integration
 void main() {
   runApp(MyApp());
+  _setupFirebaseMessaging();
+}
+
+Future<void> _setupFirebaseMessaging() async {
+  await Firebase.initializeApp();
+
+  // Messages
+  FirebaseMessaging.onMessage.listen(_firebaseHandleMessage);
+  FirebaseMessaging.onMessageOpenedApp.listen(_firebaseHandleMessage);
+  FirebaseMessaging.onBackgroundMessage(_firebaseHandleMessage);
+
+  // Token
+  String token = await FirebaseMessaging.instance.getToken();
+  print("FirebaseMessagingToken: " + token);
+
+  FirebaseMessaging.instance.onTokenRefresh.listen(saveTokenToDatabase);
+  saveTokenToDatabase(token);
+}
+
+Future<void> _firebaseHandleMessage(RemoteMessage message) async {
+  print("Handling message: ${message.messageId}");
+}
+
+Future<void> saveTokenToDatabase(String token) async {
+  print("The token was saved!");
 }
 
 class MyApp extends StatelessWidget {
